@@ -6,7 +6,6 @@ import android.util.Log;
 import android.widget.FrameLayout;
 
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
 
 import com.waheed.bassem.ocr.apis.ApiManager;
 import com.waheed.bassem.ocr.apis.OcrResultContainer;
@@ -22,23 +21,24 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class CameraFragmentViewModel extends ViewModel implements CameraInterface {
+public class CameraFragmentViewModel implements CameraInterface {
 
     private static final String TAG = "CameraFragmentViewModel";
 
-    private final MutableLiveData<ArrayList<String>> identifiedTextMutableLiveData;
-    private CameraManager cameraManager;
+    private static CameraFragmentViewModel cameraFragmentViewModel;
+
+    private final CameraManager cameraManager;
     private final ApiManager apiManager;
-    private CameraFragmentInterface cameraFragmentInterface;
+    private final CameraFragmentInterface cameraFragmentInterface;
     private boolean isProcessing;
 
-    public CameraFragmentViewModel() {
-        identifiedTextMutableLiveData = new MutableLiveData<>();
-        isProcessing = false;
+    public CameraFragmentViewModel(Context context,
+                                    FrameLayout previewFrameLayout,
+                                    String apiKey,
+                                    CameraFragmentInterface cameraFragmentInterface) {
+        Log.e(TAG, "CameraFragmentViewModel: ");
         apiManager = ApiManager.getInstance();
-    }
-
-    public void init(Context context, FrameLayout previewFrameLayout, String apiKey, CameraFragmentInterface cameraFragmentInterface) {
+        isProcessing = false;
         boolean hasNoError = apiManager.setApiKey(apiKey);
         if (!hasNoError) {
             cameraFragmentInterface.onError(ErrorCode.API_KEY_ERROR);
@@ -47,19 +47,31 @@ public class CameraFragmentViewModel extends ViewModel implements CameraInterfac
         this.cameraFragmentInterface = cameraFragmentInterface;
     }
 
-    public MutableLiveData<ArrayList<String>> getIdentifiedTextMutableLiveData() {
-        return identifiedTextMutableLiveData;
+    public static CameraFragmentViewModel getInstance(Context context,
+                                                      FrameLayout previewFrameLayout,
+                                                      String apiKey,
+                                                      CameraFragmentInterface cameraFragmentInterface) {
+
+        if (cameraFragmentViewModel == null) {
+            cameraFragmentViewModel = new CameraFragmentViewModel(context,
+                    previewFrameLayout,
+                    apiKey,
+                    cameraFragmentInterface);
+        }
+        return cameraFragmentViewModel;
     }
 
     public void captureImage() {
+        Log.e(TAG, "captureImage: ");
+        isProcessing = true;
         boolean hasNoError = cameraManager.capture();
         if (!hasNoError) {
-            isProcessing = true;
             cameraFragmentInterface.onError(ErrorCode.CAMERA_CAPTURE_ERROR);
         }
     }
 
     public void autoFocus() {
+        Log.e(TAG, "autoFocus: ");
         if (!isProcessing) {
             boolean hasNoError = cameraManager.autoFocus();
             if (!hasNoError) {
@@ -70,14 +82,16 @@ public class CameraFragmentViewModel extends ViewModel implements CameraInterfac
 
     @Override
     public void onImageCaptured(Bitmap bitmap) {
+        Log.e(TAG, "onImageCaptured: ");
         String base64Image = DataConverter.imageToBase64(bitmap, apiManager.getMaxFileSize());
         boolean hasNoError = apiManager.parseText(base64Image, new Callback<OcrResultContainer>() {
             @Override
             public void onResponse(Call<OcrResultContainer> call, Response<OcrResultContainer> response) {
+                isProcessing = false;
                 if (response != null) {
                     OcrResultContainer ocrResultContainer = response.body();
                     if (ocrResultContainer != null) {
-                        identifiedTextMutableLiveData.postValue(ocrResultContainer.getParsedText());
+                        cameraFragmentInterface.onResult(ocrResultContainer.getParsedText());
                     } else {
                         Log.e(TAG, "onResponse: ocrResultContainer is null");
                         cameraFragmentInterface.onError(ErrorCode.OCR_REQUEST_ERROR);
@@ -91,6 +105,7 @@ public class CameraFragmentViewModel extends ViewModel implements CameraInterfac
             @Override
             public void onFailure(Call<OcrResultContainer> call, Throwable t) {
                 Log.e(TAG, "onFailure: error " + t.getMessage());
+                isProcessing = false;
                 cameraFragmentInterface.onError(ErrorCode.OCR_REQUEST_ERROR);
             }
         });
@@ -101,13 +116,16 @@ public class CameraFragmentViewModel extends ViewModel implements CameraInterfac
     }
 
     public void initCamera() {
+        Log.e(TAG, "initCamera: ");
         boolean hasNoError = cameraManager.initCamera();
+        isProcessing = false;
         if (!hasNoError) {
             cameraFragmentInterface.onError(ErrorCode.CAMERA_INIT_ERROR);
         }
     }
 
     public void pauseCamera() {
+        Log.e(TAG, "pauseCamera: ");
         cameraManager.pauseCamera();
     }
 }

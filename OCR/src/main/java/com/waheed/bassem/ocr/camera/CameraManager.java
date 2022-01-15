@@ -29,16 +29,18 @@ public class CameraManager implements Camera.PictureCallback, Camera.ShutterCall
     private boolean isViewAdded;
     private boolean isCapturedPressed;
 
-    public CameraManager (Context context, FrameLayout previewFrameLayout, CameraInterface cameraInterface) {
+    public CameraManager(Context context, FrameLayout previewFrameLayout, CameraInterface cameraInterface) {
+        Log.e(TAG, "CameraManager: ");
         this.context = context;
         this.previewFrameLayout = previewFrameLayout;
         this.cameraInterface = cameraInterface;
         isViewAdded = false;
-        initCamera();
+        camera = getCameraInstance();
         cameraPreview = CameraPreview.getInstance(context, camera);
     }
 
     private Camera getCameraInstance() {
+        Log.e(TAG, "getCameraInstance: ");
         if (camera == null) {
             try {
                 camera = Camera.open(); // attempt to get a Camera instance
@@ -50,12 +52,12 @@ public class CameraManager implements Camera.PictureCallback, Camera.ShutterCall
     }
 
     public boolean initCamera() {
+        Log.e(TAG, "initCamera: ");
         isCapturedPressed = false;
-        camera = getCameraInstance();
-        if (camera == null) {
-            return false;
-        }
+        if (camera == null) camera = getCameraInstance();
+
         if (cameraPreview == null) cameraPreview = CameraPreview.getInstance(context, camera);
+
         if (!isViewAdded) {
             previewFrameLayout.addView(cameraPreview);
             isViewAdded = true;
@@ -64,10 +66,11 @@ public class CameraManager implements Camera.PictureCallback, Camera.ShutterCall
         return true;
     }
 
-    public void pauseCamera () {
+    public void pauseCamera() {
         previewFrameLayout.removeAllViews();
         if (camera != null) {
-            isViewAdded  = false;
+            isViewAdded = false;
+            cameraPreview.stopPreviewAndFreeCamera();
             camera = null;
         }
     }
@@ -88,24 +91,26 @@ public class CameraManager implements Camera.PictureCallback, Camera.ShutterCall
         return true;
     }
 
-    public boolean autoFocus () {
+    public boolean autoFocus() {
         if (!PermissionChecker.checkCameraPermissions(context)) {
             Log.e(TAG, "adjustAutoFocus: camera permission is not granted");
             return false;
         }
-
-        try {
-            if (hasAutoFocus(camera)) {
-                camera.autoFocus((b, camera) -> {});
-                return true;
-            } else {
-                Log.e(TAG, "adjustAutoFocus: camera doesn't have auto focus feature");
+        if (!isCapturedPressed) {
+            try {
+                if (hasAutoFocus(camera)) {
+                    camera.autoFocus((b, camera) -> {
+                    });
+                    return true;
+                } else {
+                    Log.e(TAG, "adjustAutoFocus: camera doesn't have auto focus feature");
+                    return false;
+                }
+            } catch (Exception ex) {
+                Log.e(TAG, "adjustAutoFocus: exception: " + ex.getMessage());
                 return false;
             }
-        } catch (Exception ex) {
-            Log.e(TAG, "adjustAutoFocus: exception: " + ex.getMessage());
-            return false;
-        }
+        } else return true;
     }
 
     private boolean hasAutoFocus(Camera camera) {
@@ -117,6 +122,7 @@ public class CameraManager implements Camera.PictureCallback, Camera.ShutterCall
     @Override
     public void onPictureTaken(byte[] data, Camera camera) {
         isCapturedPressed = false;
+        isViewAdded = false;
 
         Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
 

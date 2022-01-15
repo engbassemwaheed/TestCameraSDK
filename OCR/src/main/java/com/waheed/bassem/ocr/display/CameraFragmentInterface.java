@@ -1,6 +1,8 @@
 package com.waheed.bassem.ocr.display;
 
-public interface CameraFragmentInterface {
+import java.util.ArrayList;
 
+public interface CameraFragmentInterface {
+    void onResult(ArrayList<String> resultArrayList);
     void onError(int errorCode);
 }

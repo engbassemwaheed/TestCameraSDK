@@ -37,6 +37,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         mHolder.addCallback(this);
         // deprecated setting, but required on Android versions prior to 3.0
         mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+
+        setCamera(camera);
     }
 
     public static CameraPreview getInstance (Context context, Camera camera) {
@@ -194,7 +196,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         }
     }
 
-    private void stopPreviewAndFreeCamera() {
+    public void stopPreviewAndFreeCamera() {
 
         if (mCamera != null) {
             // Call stopPreview() to stop updating the preview surface.

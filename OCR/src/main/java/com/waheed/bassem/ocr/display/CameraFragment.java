@@ -1,6 +1,7 @@
 package com.waheed.bassem.ocr.display;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,10 +14,11 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.waheed.bassem.ocr.OcrInterface;
-import com.waheed.bassem.ocr.OcrManager;
 import com.waheed.bassem.ocr.R;
 import com.waheed.bassem.ocr.StatusInterface;
 import com.waheed.bassem.ocr.view_model.CameraFragmentViewModel;
+
+import java.util.ArrayList;
 
 public class CameraFragment extends Fragment implements CameraFragmentInterface {
 
@@ -31,7 +33,7 @@ public class CameraFragment extends Fragment implements CameraFragmentInterface 
     private ImageButton captureImageButton;
     private ImageButton cancelImageButton;
 
-    private CameraFragmentViewModel cameraFragmentViewModel;
+    private CameraFragmentViewModel  cameraFragmentViewModel;
 
     public CameraFragment() {
 
@@ -53,7 +55,7 @@ public class CameraFragment extends Fragment implements CameraFragmentInterface 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_camera, container, false);
-
+        Log.e(TAG, "onCreateView: ");
         initViews(rootView);
         initVariables();
         setListeners();
@@ -69,12 +71,11 @@ public class CameraFragment extends Fragment implements CameraFragmentInterface 
     }
 
     private void initVariables() {
-        cameraFragmentViewModel = new ViewModelProvider(requireActivity()).get(CameraFragmentViewModel.class);
-        cameraFragmentViewModel.init(requireContext(), previewFrameLayout, apiKey, this);
-        cameraFragmentViewModel.getIdentifiedTextMutableLiveData().observe(requireActivity(), textResult -> {
-            if (ocrInterface != null) ocrInterface.onOcrResult(textResult);
-            if (statusInterface != null) statusInterface.onDone();
-        });
+        cameraFragmentViewModel = new CameraFragmentViewModel(requireContext(),
+                previewFrameLayout,
+                apiKey,
+                this);
+
     }
 
     private void setListeners() {
@@ -86,27 +87,40 @@ public class CameraFragment extends Fragment implements CameraFragmentInterface 
         });
 
         cancelImageButton.setOnClickListener(v -> {
+//            if (cameraFragmentViewModel != null) cameraFragmentViewModel.pauseCamera();
             if (ocrInterface != null) ocrInterface.onCancelPressed();
             if (statusInterface != null) statusInterface.onDone();
         });
 
-        previewFrameLayout.setOnClickListener(v -> cameraFragmentViewModel.autoFocus());
+        previewFrameLayout.setOnClickListener(v -> {
+            if (cameraFragmentViewModel != null) cameraFragmentViewModel.autoFocus();
+        });
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        Log.e(TAG, "onResume: ");
         if (cameraFragmentViewModel != null) cameraFragmentViewModel.initCamera();
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        Log.e(TAG, "onPause: ");
         if (cameraFragmentViewModel != null) cameraFragmentViewModel.pauseCamera();
     }
 
     @Override
+    public void onResult(ArrayList<String> resultArrayList) {
+        if (ocrInterface != null) ocrInterface.onOcrResult(resultArrayList);
+//            if (cameraFragmentViewModel != null) cameraFragmentViewModel.pauseCamera();
+        if (statusInterface != null) statusInterface.onDone();
+    }
+
+    @Override
     public void onError(int errorCode) {
+//        if (cameraFragmentViewModel != null) cameraFragmentViewModel.pauseCamera();
         if (ocrInterface != null) ocrInterface.onError(errorCode);
         if (statusInterface != null) statusInterface.onDone();
     }
