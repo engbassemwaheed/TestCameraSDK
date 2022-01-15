@@ -65,7 +65,7 @@ public class CameraFragmentViewModel extends ViewModel implements CameraInterfac
 
     @Override
     public void onImageCaptured(Bitmap bitmap) {
-        String base64Image = DataConverter.imageToBase64(bitmap);
+        String base64Image = DataConverter.imageToBase64(bitmap, apiManager.getMaxFileSize());
         boolean hasNoError = apiManager.parseText(base64Image, new Callback<OcrResultContainer>() {
             @Override
             public void onResponse(Call<OcrResultContainer> call, Response<OcrResultContainer> response) {

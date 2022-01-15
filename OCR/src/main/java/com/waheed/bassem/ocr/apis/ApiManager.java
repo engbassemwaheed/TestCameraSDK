@@ -54,4 +54,7 @@ public class ApiManager {
     }
 
 
+    public int getMaxFileSize() {
+        return Constants.MAX_FILE_SIZE;
+    }
 }
