@@ -30,9 +30,11 @@ public class CameraFragmentViewModel extends ViewModel implements CameraInterfac
     private CameraManager cameraManager;
     private final ApiManager apiManager;
     private CameraFragmentInterface cameraFragmentInterface;
+    private boolean isProcessing;
 
     public CameraFragmentViewModel() {
         identifiedTextMutableLiveData = new MutableLiveData<>();
+        isProcessing = false;
         apiManager = ApiManager.getInstance();
     }
 
@@ -52,14 +54,17 @@ public class CameraFragmentViewModel extends ViewModel implements CameraInterfac
     public void captureImage() {
         boolean hasNoError = cameraManager.capture();
         if (!hasNoError) {
+            isProcessing = true;
             cameraFragmentInterface.onError(ErrorCode.CAMERA_CAPTURE_ERROR);
         }
     }
 
     public void autoFocus() {
-        boolean hasNoError = cameraManager.autoFocus();
-        if (!hasNoError) {
-            cameraFragmentInterface.onError(ErrorCode.CAMERA_AUTO_FOCUS_ERROR);
+        if (!isProcessing) {
+            boolean hasNoError = cameraManager.autoFocus();
+            if (!hasNoError) {
+                cameraFragmentInterface.onError(ErrorCode.CAMERA_AUTO_FOCUS_ERROR);
+            }
         }
     }
 

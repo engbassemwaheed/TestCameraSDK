@@ -23,13 +23,14 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         FragmentManager fragmentManager = getSupportFragmentManager();
 
+
         String apiKey = "8e326757f088957";
         OcrManager ocrManager = OcrManager.getInstance(apiKey);
 
         ocrManager.startOCR(fragmentManager, R.id.frame_layout, new OcrInterface() {
             @Override
-            public void onOcrResult(ArrayList<String> text) {
-                Log.e(TAG, "onOcrResult: text = " + text);
+            public void onOcrResult(ArrayList<String> textArrayList) {
+                Log.e(TAG, "onOcrResult: text = " + textArrayList);
             }
 
             @Override

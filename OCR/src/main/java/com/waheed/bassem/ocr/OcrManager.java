@@ -19,6 +19,9 @@ public class OcrManager implements StatusInterface {
         cameraFragment.setOcrManagerInterface(this);
     }
 
+    /**
+     * @param apiKey api key you will get from http://ocr.space/
+     */
     public static OcrManager getInstance(String apiKey) {
         if (ocrManager == null) {
             ocrManager = new OcrManager(apiKey);
@@ -26,6 +29,11 @@ public class OcrManager implements StatusInterface {
         return ocrManager;
     }
 
+    /**
+     * @param fragmentManager from getSupportFragmentManager()
+     * @param containerId container view id in which the camera fragment will be displayed
+     * @param ocrInterface interface containing results, errors and cancel operation
+     */
     public void startOCR(FragmentManager fragmentManager, int containerId, OcrInterface ocrInterface) {
         cameraFragment.setApiKey(apiKey);
         cameraFragment.setOcrInterface(ocrInterface);
