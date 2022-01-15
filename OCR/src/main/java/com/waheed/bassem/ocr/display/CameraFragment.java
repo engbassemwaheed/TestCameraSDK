@@ -73,6 +73,7 @@ public class CameraFragment extends Fragment implements CameraFragmentInterface 
         cameraFragmentViewModel.init(requireContext(), previewFrameLayout, apiKey, this);
         cameraFragmentViewModel.getIdentifiedTextMutableLiveData().observe(requireActivity(), textResult -> {
             if (ocrInterface != null) ocrInterface.onOcrResult(textResult);
+            if (statusInterface != null) statusInterface.onDone();
         });
     }
 
@@ -86,7 +87,7 @@ public class CameraFragment extends Fragment implements CameraFragmentInterface 
 
         cancelImageButton.setOnClickListener(v -> {
             if (ocrInterface != null) ocrInterface.onCancelPressed();
-            if (statusInterface != null) statusInterface.onCancelPressed();
+            if (statusInterface != null) statusInterface.onDone();
         });
 
         previewFrameLayout.setOnClickListener(v -> cameraFragmentViewModel.autoFocus());
@@ -107,6 +108,7 @@ public class CameraFragment extends Fragment implements CameraFragmentInterface 
     @Override
     public void onError(int errorCode) {
         if (ocrInterface != null) ocrInterface.onError(errorCode);
+        if (statusInterface != null) statusInterface.onDone();
     }
 
 

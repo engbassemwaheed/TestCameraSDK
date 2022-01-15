@@ -37,8 +37,10 @@ public class OcrManager implements StatusInterface {
                 .commit();
     }
 
+
+
     @Override
-    public void onCancelPressed() {
+    public void onDone() {
         if (fragmentManager != null)
             fragmentManager.beginTransaction().remove(cameraFragment).commit();
     }
