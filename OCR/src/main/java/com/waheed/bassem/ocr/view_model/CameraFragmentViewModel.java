@@ -47,20 +47,6 @@ public class CameraFragmentViewModel implements CameraInterface {
         this.cameraFragmentInterface = cameraFragmentInterface;
     }
 
-    public static CameraFragmentViewModel getInstance(Context context,
-                                                      FrameLayout previewFrameLayout,
-                                                      String apiKey,
-                                                      CameraFragmentInterface cameraFragmentInterface) {
-
-        if (cameraFragmentViewModel == null) {
-            cameraFragmentViewModel = new CameraFragmentViewModel(context,
-                    previewFrameLayout,
-                    apiKey,
-                    cameraFragmentInterface);
-        }
-        return cameraFragmentViewModel;
-    }
-
     public void captureImage() {
         Log.e(TAG, "captureImage: ");
         isProcessing = true;
