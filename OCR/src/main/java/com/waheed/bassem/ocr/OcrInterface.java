@@ -2,9 +2,7 @@ package com.waheed.bassem.ocr;
 
 import java.util.ArrayList;
 
-public interface OcrInterface {
-
+public interface OcrInterface extends StatusInterface{
     void onOcrResult (ArrayList<String> text);
-    void onBackPressed ();
     void onError(int errorCode);
 }

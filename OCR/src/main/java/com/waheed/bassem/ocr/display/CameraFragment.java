@@ -1,23 +1,21 @@
 package com.waheed.bassem.ocr.display;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.waheed.bassem.ocr.OcrInterface;
+import com.waheed.bassem.ocr.OcrManager;
 import com.waheed.bassem.ocr.R;
-import com.waheed.bassem.ocr.camera.CameraManager;
+import com.waheed.bassem.ocr.StatusInterface;
 import com.waheed.bassem.ocr.view_model.CameraFragmentViewModel;
 
 public class CameraFragment extends Fragment implements CameraFragmentInterface {
@@ -26,12 +24,12 @@ public class CameraFragment extends Fragment implements CameraFragmentInterface 
 
     private OcrInterface ocrInterface;
     private String apiKey;
+    private StatusInterface statusInterface;
 
     private FrameLayout loadingFrameLayout;
     private FrameLayout previewFrameLayout;
     private ImageButton captureImageButton;
     private ImageButton cancelImageButton;
-
 
     private CameraFragmentViewModel cameraFragmentViewModel;
 
@@ -45,6 +43,10 @@ public class CameraFragment extends Fragment implements CameraFragmentInterface 
 
     public void setApiKey(String apiKey) {
         this.apiKey = apiKey;
+    }
+
+    public void setOcrManagerInterface(StatusInterface statusInterface) {
+        this.statusInterface = statusInterface;
     }
 
     @Nullable
@@ -78,11 +80,13 @@ public class CameraFragment extends Fragment implements CameraFragmentInterface 
         captureImageButton.setOnClickListener(v -> {
             cameraFragmentViewModel.captureImage();
             captureImageButton.setVisibility(View.GONE);
+            cancelImageButton.setVisibility(View.GONE);
             loadingFrameLayout.setVisibility(View.VISIBLE);
         });
 
         cancelImageButton.setOnClickListener(v -> {
-            if (ocrInterface != null) ocrInterface.onBackPressed();
+            if (ocrInterface != null) ocrInterface.onCancelPressed();
+            if (statusInterface != null) statusInterface.onCancelPressed();
         });
 
         previewFrameLayout.setOnClickListener(v -> cameraFragmentViewModel.autoFocus());
@@ -104,4 +108,6 @@ public class CameraFragment extends Fragment implements CameraFragmentInterface 
     public void onError(int errorCode) {
         if (ocrInterface != null) ocrInterface.onError(errorCode);
     }
+
+
 }

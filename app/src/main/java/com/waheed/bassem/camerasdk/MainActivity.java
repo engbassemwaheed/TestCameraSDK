@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onBackPressed() {
+            public void onCancelPressed() {
                 Log.e(TAG, "onBackPressed:");
             }
 
